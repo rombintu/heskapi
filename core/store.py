@@ -6,7 +6,12 @@ import json
 from utils.logger import logger as log
 from core.config import Tables, statuses
 import pymysql.cursors
+from pymysql.err import IntegrityError
+from pydantic import BaseModel
 
+class Client(BaseModel):
+    telegram_id: int
+    email: str
 
 class StoreCreds:
     def __init__(self, 
@@ -41,7 +46,8 @@ class Store:
                                     password=c.password,
                                     database=c.database,
                                     cursorclass=pymysql.cursors.DictCursor)
-        
+        self.create_table_for_api()
+
     def check_version(self):
         with self.connection.cursor() as cursor:
             cursor.execute("SELECT VERSION()")
@@ -212,15 +218,32 @@ class Store:
                     row["name"] = list(json.loads(row.get("name")).values())[0]
                     row["value"] = json.loads(row.get("value"))
             return payload
+        
+    def create_table_for_api(self):
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"""
+                CREATE TABLE IF NOT EXISTS {Tables.clients.value} (
+                    id INT PRIMARY KEY AUTO_INCREMENT,
+                    tid INT NOT NULL UNIQUE,
+                    email VARCHAR(50) NOT NULL UNIQUE
+                );
+                """)
+            log.debug(f"CREATE TABLE IF NOT EXISTS [{Tables.clients.value}]")
 
-# with connection:
-#     with connection.cursor() as cursor:
-#         # Create a new record
-#         sql = "INSERT INTO `users` (`email`, `password`) VALUES (%s, %s)"
-#         cursor.execute(sql, ('webmaster@python.org', 'very-secret'))
-
-#     # connection is not autocommit by default. So you must commit to save
-#     # your changes.
-#     connection.commit()
-
+    def client_get_by_tid(self, tid: int):
+        with self.connection.cursor() as cursor:
+            sql = f"""SELECT * FROM {Tables.clients.value} WHERE tid=%s"""
+            cursor.execute(sql, (tid))
+            result = cursor.fetchone()
+            return result
     
+    def client_create(self, tid: int, email: str):
+        result = None
+        with self.connection.cursor() as cursor:
+            sql = f"""INSERT INTO {Tables.clients.value} (tid, email) VALUES (%s, %s)"""
+            try:
+                cursor.execute(sql, (tid, email))
+            except IntegrityError as err:
+                log.warning(err)
+        self.connection.commit()
+        return result

@@ -1,6 +1,6 @@
 from sys import exit
 
-from core.store import Store, StoreCreds
+from core.store import Store, StoreCreds, Client
 from core.service_api import Ticket, Message_from_hesk, create_new_ticket
 from core.config import Config
 from core import bot_api
@@ -38,6 +38,10 @@ tags_metadata = [
         "name": "email",
         "description": "Manage email",
     },
+    {
+        "name": "clients",
+        "description": "Manage clients (custom table)",
+    }
 ]
 
 @app.get("/")
@@ -132,3 +136,11 @@ async def email_postmail(mail: post_api.EmailBody):
         builded_message=message
     )
     return {"error": err}
+
+@app.get("/clients/{telegram_id}", tags=['clients'])
+async def clients_get_by_telegram_id(telegram_id: int):
+    return store.client_get_by_tid(telegram_id)
+
+@app.post("/clients/create", tags=['clients'])
+async def clients_get_by_telegram_id(client: Client):
+    return store.client_create(client.telegram_id, client.email)

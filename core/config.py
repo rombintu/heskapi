@@ -45,6 +45,7 @@ class Tables(Enum):
     tickets = Config.mysql_table_prefix + "tickets"
     custom_statutes = Config.mysql_table_prefix + "custom_statuses"
     custom_fields = Config.mysql_table_prefix + "custom_fields"
+    clients = Config.mysql_table_prefix + "clients"
 
 
 statuses = {
