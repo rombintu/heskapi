@@ -90,3 +90,7 @@ def test_send_postmail():
 
     message = postmail.build_postmail_message("testing", 'Hello world', 'rnikolskiy@at-consulting.ru')
     postmail.send_email('rnikolskiy@at-consulting.ru', message)
+
+def test_client_create():
+    result = store.client_create(11, "email@gmail.com", "testing")
+    log.debug(result)

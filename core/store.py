@@ -12,6 +12,7 @@ from pydantic import BaseModel
 class Client(BaseModel):
     telegram_id: int
     email: str
+    username: str | None
 
 class StoreCreds:
     def __init__(self, 
@@ -224,26 +225,59 @@ class Store:
             cursor.execute(f"""
                 CREATE TABLE IF NOT EXISTS {Tables.clients.value} (
                     id INT PRIMARY KEY AUTO_INCREMENT,
-                    tid INT NOT NULL UNIQUE,
-                    email VARCHAR(50) NOT NULL UNIQUE
+                    telegram_id INT NOT NULL UNIQUE,
+                    email VARCHAR(50) NOT NULL UNIQUE,
+                    isadmin BOOLEAN DEFAULT false,
+                    username VARCHAR(50)
                 );
                 """)
             log.debug(f"CREATE TABLE IF NOT EXISTS [{Tables.clients.value}]")
 
-    def client_get_by_tid(self, tid: int):
+    def client_get_by_tid(self, telegram_id: int):
         with self.connection.cursor() as cursor:
-            sql = f"""SELECT * FROM {Tables.clients.value} WHERE tid=%s"""
-            cursor.execute(sql, (tid))
+            sql = f"""SELECT * FROM {Tables.clients.value} WHERE telegram_id=%s"""
+            cursor.execute(sql, (telegram_id))
             result = cursor.fetchone()
             return result
     
-    def client_create(self, tid: int, email: str):
+    def client_create(self, telegram_id: int, email: str, username: str = None):
         result = None
         with self.connection.cursor() as cursor:
-            sql = f"""INSERT INTO {Tables.clients.value} (tid, email) VALUES (%s, %s)"""
+            sql = f"""INSERT INTO {Tables.clients.value} (telegram_id, email, username) VALUES (%s, %s, %s)"""
             try:
-                cursor.execute(sql, (tid, email))
+                cursor.execute(sql, (telegram_id, email, username))
+                self.connection.commit()
             except IntegrityError as err:
-                log.warning(err)
-        self.connection.commit()
+                result = err.args[-1]
+        return result
+    
+    def client_delete(self, telegram_id: int):
+        result = None
+        with self.connection.cursor() as cursor:
+            sql = f"""DELETE FROM {Tables.clients.value} WHERE telegram_id=%s"""
+            try:
+                cursor.execute(sql, (telegram_id))
+                self.connection.commit()
+            except IntegrityError as err:
+                result = {"error" : err.args[-1]}
+        return result
+    
+    def client_reload(self, telegram_id: int):
+        result = None
+        with self.connection.cursor() as cursor:
+            is_admin = False
+            sql_select = f"""SELECT COUNT(*) as exist FROM {Tables.users.value} hu
+                        LEFT JOIN {Tables.clients.value} hc 
+                            ON hu.email = hc.email 
+                            WHERE hc.telegram_id = %s"""
+            sql_update = f"""UPDATE {Tables.clients.value} SET isadmin=%s WHERE telegram_id=%s"""
+            try:
+                cursor.execute(sql_select, (telegram_id))
+                result = cursor.fetchone()
+                if result:
+                    is_admin = result.get("exist")
+                    cursor.execute(sql_update, (is_admin, telegram_id))
+                    self.connection.commit()                    
+            except IntegrityError as err:
+                result = {"error" : err.args[-1]}
         return result

@@ -14,6 +14,7 @@ class EmailBody(BaseModel):
     subject: str
     to_addr: str
     body: str
+    is_html: bool = False
 
 
 class PostMail:
@@ -26,13 +27,13 @@ class PostMail:
         self.context = ssl.create_default_context()
 
     @staticmethod
-    def build_postmail_message(subject, body, to_addr, from_addr=Config.smtp_sender):
+    def build_postmail_message(subject, body, to_addr, from_addr=Config.smtp_sender, is_html=False):
         message = MIMEMultipart()
         message["From"] = from_addr
         message["To"] = to_addr
         message["Subject"] = subject
         # message["Bcc"] = to_addr
-        message.attach(MIMEText(body, "plain"))
+        message.attach(MIMEText(body, "html" if is_html else "plain"))
 
         return message.as_string()
 

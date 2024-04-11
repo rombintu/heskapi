@@ -129,7 +129,8 @@ async def email_postmail(mail: post_api.EmailBody):
     message = post_api.post_mail.build_postmail_message(
         subject=mail.subject,
         to_addr=mail.to_addr,
-        body=mail.body
+        body=mail.body,
+        is_html=mail.is_html
     )
     err = post_api.post_mail.send_email(
         to_addr=mail.to_addr,
@@ -141,6 +142,17 @@ async def email_postmail(mail: post_api.EmailBody):
 async def clients_get_by_telegram_id(telegram_id: int):
     return store.client_get_by_tid(telegram_id)
 
+@app.get("/clients/reload/{telegram_id}", tags=['clients'])
+async def clients_reload(telegram_id: int):
+    error = store.client_reload(telegram_id)
+    if error and error.get("error"):
+        return error
+    return store.client_get_by_tid(telegram_id)
+
 @app.post("/clients/create", tags=['clients'])
-async def clients_get_by_telegram_id(client: Client):
-    return store.client_create(client.telegram_id, client.email)
+async def clients_create(client: Client):
+    return store.client_create(client.telegram_id, client.email, client.username)
+
+@app.delete("/clients/{telegram_id}", tags=['clients'])
+async def clients_delete(telegram_id: int):
+    return store.client_delete(telegram_id)
