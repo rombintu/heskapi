@@ -13,6 +13,7 @@ class Client(BaseModel):
     telegram_id: int
     email: str
     username: str | None
+    fio: str 
 
 class StoreCreds:
     def __init__(self, 
@@ -102,6 +103,34 @@ class Store:
             result = cursor.fetchall()
             return result
 
+    def tickets_by_email(self, email: str):
+        with self.connection.cursor() as cursor:
+            sql = f"""
+                SELECT ht.trackid, ht.subject, hu.name AS owner_name, hc.name AS category_name
+                FROM {Tables.tickets.value} ht
+                    LEFT JOIN {Tables.users.value} hu
+                        ON ht.owner = hu.id
+                    LEFT JOIN {Tables.categories.value} hc
+                        ON ht.category = hc.id
+                    WHERE ht.email=%s AND ht.status != %s"""
+            cursor.execute(sql, (email, 3))
+            result = cursor.fetchall()
+            return result
+
+    def tickets_by_email_owner(self, email: str):
+        with self.connection.cursor() as cursor:
+            sql = f"""
+                SELECT ht.trackid, ht.subject, hu.name AS owner_name, hc.name AS category_name
+                FROM {Tables.tickets.value} ht
+                    LEFT JOIN {Tables.users.value} hu
+                        ON ht.owner = hu.id
+                    LEFT JOIN {Tables.categories.value} hc
+                        ON ht.category = hc.id
+                    WHERE hu.email=%s AND ht.status != %s"""
+            cursor.execute(sql, (email, 3))
+            result = cursor.fetchall()
+            return result
+
     def ticket_get(self, ticket_id: int):
         with self.connection.cursor() as cursor:
             sql = f"""
@@ -115,7 +144,7 @@ class Store:
                     LIMIT 1"""
             cursor.execute(sql, (ticket_id))
             result = cursor.fetchone()
-            if result and result.get("status"):
+            if result:
                 status = self.ticket_status_get(result["status"])
                 result["status"] = status
             return result
@@ -133,7 +162,7 @@ class Store:
                     LIMIT 1"""
             cursor.execute(sql, (track_id))
             result = cursor.fetchone()
-            if result and result.get("status"):
+            if result:
                 status = self.ticket_status_get(result["status"])
                 result["status"] = status
             return result
@@ -173,6 +202,7 @@ class Store:
             for cfo in custom_fields_original:
                 if cfo['id'] == cf['id']:
                     cf['name'] = cfo['name']
+                    cf['type'] = cfo['type']
         return cf_values_from_ticket
 
 
@@ -212,12 +242,21 @@ class Store:
             cursor.execute(sql, (2))
             result = cursor.fetchall()
             payload = []
+            
             for row in result:
-                category_list: list = literal_eval(row.get('category'))
+                category_list: list = []
+                try:
+                    category_list = literal_eval(row.get('category'))
+                except ValueError:
+                    category_list = ["*"]
                 if str(category_id) in category_list:
-                    payload.append(row)
                     row["name"] = list(json.loads(row.get("name")).values())[0]
                     row["value"] = json.loads(row.get("value"))
+                    payload.append(row)
+                elif "*" in category_list:
+                    row["name"] = list(json.loads(row.get("name")).values())[0]
+                    row["value"] = json.loads(row.get("value"))
+                    payload.append(row)
             return payload
         
     def create_table_for_api(self):
@@ -240,12 +279,12 @@ class Store:
             result = cursor.fetchone()
             return result
     
-    def client_create(self, telegram_id: int, email: str, username: str = None):
+    def client_create(self, telegram_id: int, email: str, fio: str, username: str = None):
         result = None
         with self.connection.cursor() as cursor:
-            sql = f"""INSERT INTO {Tables.clients.value} (telegram_id, email, username) VALUES (%s, %s, %s)"""
+            sql = f"""INSERT INTO {Tables.clients.value} (telegram_id, email, username, fio) VALUES (%s, %s, %s, %s)"""
             try:
-                cursor.execute(sql, (telegram_id, email, username))
+                cursor.execute(sql, (telegram_id, email, username, fio))
                 self.connection.commit()
             except IntegrityError as err:
                 result = err.args[-1]

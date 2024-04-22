@@ -57,16 +57,28 @@ async def users_get_by_id(user_id: int):
     return store.user_get(user_id)
 
 @app.get("/tickets", tags=['tickets'])
-async def tickets_get():
-    return store.tickets_get()
+async def tickets_get(
+    track: str = None, 
+    email: str = None,
+    admin_email: str = None
+    ):
+    if track:
+        return store.ticket_get_by_track_id(track)
+    elif email:
+        return store.tickets_by_email(email)
+    elif admin_email:
+        return store.tickets_by_email_owner(admin_email)
+    else:
+        return store.tickets_get()
 
 @app.get("/tickets/{ticket_id}", tags=['tickets'])
 async def tickets_get_by_id(ticket_id: int):
     return store.ticket_get(ticket_id)
+   
 
-@app.get("/tickets/get", tags=['tickets'])
-async def ticket_get_by_track_id(track: str):
-    return store.ticket_get_by_track_id(track)
+# @app.get("/tickets/get", tags=['tickets'])
+# async def ticket_get_by_email(email: str):
+#     return store.tickets_by_email(email)
 
 @app.get("/tickets/user/{user_id}", tags=['tickets'])
 async def users_get_tickets_owner_without_status(user_id: int, skip_status_id: int = 3):
@@ -85,21 +97,26 @@ async def users_get_tickets_owner_without_status(user_id: int, skip_status_id: i
 
 @app.post("/tickets", tags=["tickets"])
 async def tickets_create(ticket: Ticket):
-    status = create_new_ticket(ticket)
-    return {"payload": ticket, "status": status}
+    log.debug(ticket)
+    # TODO
+    create_new_ticket(ticket)
+    return {"ticket": ticket, "status": 200}
 
 @app.post("/tickets/notify", tags=["tickets"])
 async def tickets_notify(mess_unparsed: Message_from_hesk):
-    track_id = mess_unparsed.ticket_trackid
-    chat_ids = mess_unparsed.chat_ids
+    track_id: str = mess_unparsed.ticket_trackid
+    chat_ids: list = mess_unparsed.chat_ids
+
+    log.debug(f"TICKET >> {track_id} CHATIDS >> {chat_ids}")
     if not chat_ids:
-        return {"message": "chat_ids is empty, task canceled"}
+        return {"ok": False, "message": "chat_ids is empty, task canceled"}
     ticket = store.ticket_get_by_track_id(track_id)
     if not ticket:
-        return {"message": f"ticket {track_id} not found"}
+        return {"ok": False, "message": f"ticket {track_id} not found"}
     custom_fields = store.ticket_get_custom_fields(ticket)
     message, btns = bot_api.build_message_for_ticket(ticket, custom_fields)
-    payload = bot_api.bot_send_message(message, btns, chat_ids)
+    log.debug(message)
+    payload = bot_api.bot_notify(message, btns, chat_ids)
     log.debug(payload)
     return payload
 
@@ -151,7 +168,9 @@ async def clients_reload(telegram_id: int):
 
 @app.post("/clients/create", tags=['clients'])
 async def clients_create(client: Client):
-    return store.client_create(client.telegram_id, client.email, client.username)
+    return store.client_create(
+        client.telegram_id, client.email, 
+        client.fio, client.username)
 
 @app.delete("/clients/{telegram_id}", tags=['clients'])
 async def clients_delete(telegram_id: int):

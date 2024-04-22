@@ -20,7 +20,7 @@ def test_get_users():
     assert len(users) > 0
 
 def test_get_ticket_by_id():
-    result = store.ticket_get_by_track_id("5U6-B86-XPRS")
+    result = store.ticket_get_by_track_id("76B-DX6-RX1R")
     log.debug(to_json(result))
     # log.debug(result)
     assert len(result) > 0

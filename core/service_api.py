@@ -1,4 +1,4 @@
-import requests
+import requests, json
 from os import path
 from core.config import Config
 
@@ -39,7 +39,7 @@ class Message_from_hesk(BaseModel):
 
 def create_new_ticket(ticket: Ticket):
     response = requests.post(
-        path.join(Config.service_url, actions["submit_ticket"]["path"]), 
+        path.join(Config.hesk_web_url, actions["submit_ticket"]["path"]), 
         params=actions["submit_ticket"]["params"],
         data=ticket.to_dict(),
         verify=False,
