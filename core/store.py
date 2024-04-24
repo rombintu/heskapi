@@ -264,10 +264,11 @@ class Store:
             cursor.execute(f"""
                 CREATE TABLE IF NOT EXISTS {Tables.clients.value} (
                     id INT PRIMARY KEY AUTO_INCREMENT,
-                    telegram_id INT NOT NULL UNIQUE,
+                    telegram_id BIGINT NOT NULL UNIQUE,
                     email VARCHAR(50) NOT NULL UNIQUE,
                     isadmin BOOLEAN DEFAULT false,
-                    username VARCHAR(50)
+                    username VARCHAR(50),
+                    fio VARCHAR(50)
                 );
                 """)
             log.debug(f"CREATE TABLE IF NOT EXISTS [{Tables.clients.value}]")

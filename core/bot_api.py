@@ -52,7 +52,7 @@ def if_type_is_date(row: dict):
 def build_message_for_ticket(t: dict, custom_fields: list):
     # status = statuses[t.get('status')]
     trackid = t.get('trackid')
-    body = '' if not t.get('message') else t['message'].split('<br')[0] + "..."
+    # body = '' if not t.get('message') else t['message'].split('<br')[0] + "..."
     custom_fields_data = ""
     if custom_fields:
         for cf in custom_fields:
@@ -69,11 +69,13 @@ def build_message_for_ticket(t: dict, custom_fields: list):
         \n📪 {t.get('email')} \
         \n🔬 Категория: {t.get('category_name')}\
         \nТема: <em>{'' if not t.get('subject') else t['subject']}</em>\
-        \nСообщение: {body}\
         \nДополнительные поля:\
         \n{'- Нет' if not custom_fields_data else custom_fields_data}"""
     reply_markup = {
         "inline_keyboard": [
+                [
+                    {"text": "Синхронизировать ⚙️", "callback_data": f"tickets_reload_{trackid}"}  
+                ],
                 [
                     {"text":"Подробнее 🖥", "url": f"{Config.hesk_web_url}/admin/admin_ticket.php?track={trackid}"}
                 ]

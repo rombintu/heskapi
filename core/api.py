@@ -1,5 +1,3 @@
-from sys import exit
-
 from core.store import Store, StoreCreds, Client
 from core.service_api import Ticket, Message_from_hesk, create_new_ticket
 from core.config import Config
