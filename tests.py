@@ -69,18 +69,18 @@ def test_bot_send_message():
 
 @pytest.mark.asyncio
 async def test_create_ticket():
-    custom_fields = store.mapping_category2custom_flds(2)
-    log.debug(to_json(custom_fields))
-    cfs_names = []
-    for cf in custom_fields:
-        cfs_names.append(f'custom{cf.get("id")}')
-    log.debug(to_json(cfs_names))
+    # custom_fields = store.mapping_category2custom_flds(2)
+    # log.debug(to_json(custom_fields))
+    # cfs_names = []
+    # for cf in custom_fields:
+    #     cfs_names.append(f'custom{cf.get("id")}')
+    # log.debug(to_json(cfs_names))
     ticket = Ticket(
         name="Name Lastname",
         email="cloudesk_at@at-consulting.ru",
         subject="ticket autocreate from testing",
         message="Тело письма", category=1, 
-        custom_fields={cfs_names[0]: "custom first", cfs_names[1]: "custom second"} 
+        custom_fields={} 
     )
     res = await api.tickets_create(ticket)
     log.debug(to_json(res))
