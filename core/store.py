@@ -45,11 +45,6 @@ class Store:
         # Connect to the database
         self.connection = None
         self.creds = c
-        # self.connection = pymysql.connect(host=c.host,
-        #                             user=c.user,
-        #                             password=c.password,
-        #                             database=c.database,
-        #                             cursorclass=pymysql.cursors.DictCursor)
         self.create_table_for_api()
 
     def open(self):
@@ -101,27 +96,13 @@ class Store:
         return self.execute_select_all("SELECT VERSION()")
     
     def get_tables(self):
-        # with self.connection.cursor() as cursor:
-        #     cursor.execute("SHOW TABLES")
-        #     result = cursor.fetchall()
-        #     return result
         return self.execute_select_all("SHOW TABLES")
     
     def users_get(self):
-        # with self.connection.cursor() as cursor:
-            # sql = f"SELECT id, user, isadmin, name, email FROM {Tables.users.value}"
-            # cursor.execute(sql)
-            # result = cursor.fetchall()
-            # return result
         return self.execute_select_all(
             f"SELECT id, user, isadmin, name, email FROM {Tables.users.value}")
         
     def user_get(self, user_id: int):
-        # with self.connection.cursor() as cursor:
-        #     sql = f"SELECT id, user, isadmin, name, email FROM {Tables.users.value} WHERE id=%s"
-        #     cursor.execute(sql, (user_id))
-        #     result = cursor.fetchone()
-        #     return result
         return self.execute_select_one(
             f"SELECT id, user, isadmin, name, email FROM {Tables.users.value} WHERE id=%s",
             params=(user_id)
@@ -153,7 +134,7 @@ class Store:
             # cursor.execute(sql, (user_id, skip_status_id))
             # result = cursor.fetchall()
             # return result
-        self.execute_select_all(sql, params=(user_id, skip_status_id))
+        return self.execute_select_all(sql, params=(user_id, skip_status_id))
 
     def tickets_by_email(self, email: str):
         # with self.connection.cursor() as cursor:
@@ -168,7 +149,7 @@ class Store:
             # cursor.execute(sql, (email, 3))
             # result = cursor.fetchall()
             # return result
-        self.execute_select_all(sql, (email, 3))
+        return self.execute_select_all(sql, (email, 3))
 
     def tickets_by_email_owner(self, email: str):
         # with self.connection.cursor() as cursor:
@@ -183,7 +164,7 @@ class Store:
             # cursor.execute(sql, (email, 3))
             # result = cursor.fetchall()
             # return result
-        self.execute_select_all(sql, (email, 3))
+        return self.execute_select_all(sql, (email, 3))
 
     def ticket_get(self, ticket_id: int):
         # with self.connection.cursor() as cursor:
@@ -327,7 +308,8 @@ class Store:
                 email VARCHAR(50) NOT NULL UNIQUE,
                 isadmin BOOLEAN DEFAULT false,
                 username VARCHAR(50),
-                fio VARCHAR(50)
+                fio VARCHAR(50),
+                isnotify BOOLEAN DEFAULT false
             );
             """
         log.debug(f"CREATE TABLE IF NOT EXISTS [{Tables.clients.value}]")

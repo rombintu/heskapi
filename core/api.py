@@ -61,7 +61,13 @@ async def tickets_get(
     admin_email: str = None
     ):
     if track:
-        return store.ticket_get_by_track_id(track)
+        ticket = store.ticket_get_by_track_id(track)
+        if not ticket:
+            return None
+        else:
+            ticket_cf = store.ticket_get_custom_fields(ticket)
+            ticket['custom_fields'] = ticket_cf
+            return ticket
     elif email:
         return store.tickets_by_email(email)
     elif admin_email:
