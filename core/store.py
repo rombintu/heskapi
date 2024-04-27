@@ -193,7 +193,6 @@ class Store:
         return result
     
     def ticket_get_by_track_id(self, track_id: int):
-        # with self.connection.cursor() as cursor:
         sql = f"""
             SELECT ht.*, hu.name AS owner_name, hc.name AS category_name
             FROM {Tables.tickets.value} ht
@@ -203,7 +202,6 @@ class Store:
                     ON ht.category = hc.id
                 WHERE ht.trackid=%s
                 LIMIT 1"""
-            # cursor.execute(sql, (track_id))
         result = self.execute_select_one(sql, (track_id))
         if result:
             status = self.ticket_status_get(result["status"])
@@ -211,27 +209,33 @@ class Store:
         return result
 
     def tickets_get(self):
-        # with self.connection.cursor() as cursor:
         sql = f"""SELECT * FROM {Tables.tickets.value}"""
-        #     cursor.execute(sql)
-        #     result = cursor.fetchall()
-        #     return result
         return self.execute_select_all(sql)
+
+    def tickets_get_history_replies(self, ticket_trackid: str):
+        sql = f"""
+        SELECT hr.name, hr.message FROM {Tables.tickets.value} ht 
+            LEFT JOIN {Tables.replies.value} hr
+                ON ht.id = hr.replyto
+            WHERE ht.trackid = %s"""
+        return self.execute_select_all(sql, (ticket_trackid))
     
     def ticket_status_get(self, status_id: int):
         result = statuses.get(status_id)
         if not result:
             result = "Нет статуса"
-            # with self.connection.cursor() as cursor:
             sql = f"""
                 SELECT name FROM {Tables.custom_statutes.value}
                 WHERE id=%s"""
             status = self.execute_select_one(sql, (status_id))
-                # status = cursor.fetchone()
             if status:
                 result = status.get('name')
         return result
-    
+
+    def ticket_status_update(self, trackid: str, new_status: str = "3"):
+        sql = f"UPDATE {Tables.tickets.value} SET status=%s WHERE trackid=%s"
+        self.execute_with_commit(sql, (new_status, trackid))
+
     def ticket_get_custom_fields(self, ticket: dict):
         custom_fields_original = self.mapping_category2custom_flds(ticket.get("category"))
         cf_values_from_ticket = []

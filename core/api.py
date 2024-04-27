@@ -1,6 +1,6 @@
 from core.store import Store, StoreCreds, Client
 from core.service_api import Ticket, Message_from_hesk, create_new_ticket
-from core.config import Config
+from core.config import Config, statuses
 from core import bot_api
 from core import post_api
 from utils.logger import logger as log
@@ -108,6 +108,16 @@ async def users_get_tickets_owner_without_status(user_id: int, skip_status_id: i
     AND CUSTOM_FIELDS FROM DATABASE
     """
     return store.tickets_user_owner_without_status(user_id, skip_status_id)
+
+@app.get("/tickets/{track}/replies", tags=['tickets'])
+async def tickets_get_replies(track: str):
+    return store.tickets_get_history_replies(track)
+
+@app.put("/tickets/{track}/status/{new}", tags=['tickets'])
+async def tickets_set_new_status(track: str, status: int = 3):
+    if statuses.get(status):
+        store.ticket_status_update(track, str(status))
+    return
 
 @app.post("/tickets", tags=["tickets"])
 async def tickets_create(ticket: Ticket):
