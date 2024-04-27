@@ -146,10 +146,18 @@ class Store:
                 LEFT JOIN {Tables.categories.value} hc
                     ON ht.category = hc.id
                 WHERE ht.email=%s AND ht.status != %s"""
-            # cursor.execute(sql, (email, 3))
-            # result = cursor.fetchall()
-            # return result
         return self.execute_select_all(sql, (email, 3))
+    
+    def tickets_by_email_all(self, email: str):
+        sql = f"""
+            SELECT ht.trackid, ht.subject, hu.name AS owner_name, hc.name AS category_name
+            FROM {Tables.tickets.value} ht
+                LEFT JOIN {Tables.users.value} hu
+                    ON ht.owner = hu.id
+                LEFT JOIN {Tables.categories.value} hc
+                    ON ht.category = hc.id
+                WHERE ht.email=%s"""
+        return self.execute_select_all(sql, (email))
 
     def tickets_by_email_owner(self, email: str):
         # with self.connection.cursor() as cursor:

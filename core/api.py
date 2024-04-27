@@ -58,22 +58,32 @@ async def users_get_by_id(user_id: int):
 async def tickets_get(
     track: str = None, 
     email: str = None,
-    admin_email: str = None
+    admin_email: str = None,
+    all: bool = False
     ):
+    data = None
     if track:
         ticket = store.ticket_get_by_track_id(track)
         if not ticket:
-            return None
+            return data
         else:
             ticket_cf = store.ticket_get_custom_fields(ticket)
             ticket['custom_fields'] = ticket_cf
-            return ticket
+            data = ticket
     elif email:
-        return store.tickets_by_email(email)
+        if all:
+            data = store.tickets_by_email_all(email)
+        data = store.tickets_by_email(email)
     elif admin_email:
-        return store.tickets_by_email_owner(admin_email)
+        data = store.tickets_by_email_owner(admin_email)
     else:
-        return store.tickets_get()
+        data = store.tickets_get()
+    
+    if type(data) == list:
+        log.debug(f"COUNT RESULT: {len(data)}")
+    else: 
+        log.debug(data)
+    return data
 
 @app.get("/tickets/{ticket_id}", tags=['tickets'])
 async def tickets_get_by_id(ticket_id: int):
