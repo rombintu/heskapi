@@ -379,3 +379,32 @@ class Store:
         # except IntegrityError as err:
         #     result = {"error" : err.args[-1]}
         return result
+    
+    def kb_categories_get(self):
+        sql = f"""SELECT id,name,parent,articles,articles_private,type FROM {Tables.kb_categories.value}"""
+        kb_categories = self.execute_select_all(sql)
+        log.debug(kb_categories)
+        if not kb_categories:
+            return []
+        return kb_categories
+        # max_deep: dict = max(kb_categories, key=lambda x: x['parent'])
+        # categories = []
+        # for i in range(1, max_deep.get('parent')+1):
+        #     buff = []
+        #     for c in kb_categories:
+        #         if i == c.get('parent'):
+        #             buff.append(c)
+        #     categories.append(buff)
+        # return categories
+    def kb_articles_get(self):
+        sql = f"""SELECT id,catid,subject,type FROM {Tables.kb_articles.value}"""
+        kb_articles = self.execute_select_all(sql)
+        log.debug(kb_articles)
+        if not kb_articles:
+            return []
+        return kb_articles
+    
+    def kb_article_content_get(self, artid: int):
+        sql = f"""SELECT subject,content from {Tables.kb_articles.value} WHERE id=%s"""
+        content = self.execute_select_one(sql, artid)
+        return content

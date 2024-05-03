@@ -94,3 +94,7 @@ def test_send_postmail():
 def test_client_create():
     result = store.client_create(11, "email@gmail.com", "testing")
     log.debug(result)
+
+def test_kb_categories_get():
+    result = store.kb_categories_get()
+    log.debug(result)

@@ -39,6 +39,10 @@ tags_metadata = [
     {
         "name": "clients",
         "description": "Manage clients (custom table)",
+    },
+    {
+        "name": "kb",
+        "description": "Manage Knowledgebase",
     }
 ]
 
@@ -199,3 +203,14 @@ async def clients_create(client: Client):
 @app.delete("/clients/{telegram_id}", tags=['clients'])
 async def clients_delete(telegram_id: int):
     return store.client_delete(telegram_id)
+
+@app.get("/kb/categories", tags=['kb'])
+async def kb_categories_get():
+    return store.kb_categories_get()
+
+@app.get("/kb/articles", tags=['kb'])
+async def kb_articles_get(artid: int = None):
+    if not artid:
+        return store.kb_articles_get()
+    else:
+        return store.kb_article_content_get(artid)

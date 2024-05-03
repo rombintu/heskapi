@@ -47,7 +47,8 @@ class Tables(Enum):
     custom_fields = Config.mysql_table_prefix + "custom_fields"
     clients = Config.mysql_table_prefix + "clients"
     replies = Config.mysql_table_prefix + "replies"
-
+    kb_categories = Config.mysql_table_prefix + "kb_categories"
+    kb_articles = Config.mysql_table_prefix + "kb_articles"
 
 statuses = {
     0: "Новая",

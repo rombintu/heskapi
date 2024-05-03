@@ -1,46 +1,8 @@
 import requests
 from datetime import datetime
-from core.config import Config, statuses
+from core.config import Config
 from utils.logger import logger as log
-# def build_message_for_ticket(ticket: dict, custom_fields: list = []):
-#     track = ticket.get("trackid")
-#     name = ticket.get("name")
-#     subject = ticket.get("subject")
-#     message = ticket.get("message")
-#     owner = ticket.get("owner_name")
-#     status = ticket.get("status")
-#     if not owner:
-#         owner = "Не назначен"
-#     category = ticket.get("category_name")
-#     buff = ""
-#     if custom_fields:
-#         buff = "\nДополнительные поля:"
-#         for cf in custom_fields:
-#             if cf.get('value'):
-#                 buff += f"\n - {cf.get('name')}: `{cf.get('value')}`"
-    
-#     reply_markup = {
-#         "inline_keyboard": [
-#                 [
-#                     {"text":"Подробнее 🖥", "url": f"{Config.hesk_web_url}/admin/admin_ticket.php?track={track}"}
-#                 ]
-#             ]
-#     }
 
-#     message = f"""Был отправлен новый запрос в службу поддержки. 
-# Информация о заявке `{track}`:
-# Запрос создал(а): {name}
-# Тема заявки: *{subject}*
-# Категория заявки: *{category}* {buff}
-
-# Тело заявки:
-# ```bash
-# {message}
-# ```
-# Исполнитель: _{owner}_
-# Статус заявки: _{status}_
-# """
-    # return message, reply_markup
 
 def if_type_is_date(row: dict):
     value: str = row.get('value')

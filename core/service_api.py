@@ -45,3 +45,6 @@ def create_new_ticket(ticket: Ticket):
         verify=False,
         )
     return response.status_code
+
+def get_token():
+    ...
