@@ -236,6 +236,10 @@ class Store:
         sql = f"UPDATE {Tables.tickets.value} SET status=%s WHERE trackid=%s"
         self.execute_with_commit(sql, (new_status, trackid))
 
+    def ticket_owner_update(self, trackid: str, new_owner_id: int):
+        sql = f"UPDATE {Tables.tickets.value} SET owner=%s WHERE trackid=%s"
+        self.execute_with_commit(sql, (new_owner_id, trackid))
+
     def ticket_get_custom_fields(self, ticket: dict):
         custom_fields_original = self.mapping_category2custom_flds(ticket.get("category"))
         cf_values_from_ticket = []

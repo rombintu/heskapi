@@ -118,9 +118,14 @@ async def tickets_get_replies(track: str):
     return store.tickets_get_history_replies(track)
 
 @app.put("/tickets/{track}/status/{new}", tags=['tickets'])
-async def tickets_set_new_status(track: str, status: int = 3):
-    if statuses.get(status):
-        store.ticket_status_update(track, str(status))
+async def tickets_set_new_status(track: str, new: int = 3):
+    if statuses.get(new):
+        store.ticket_status_update(track, str(new))
+    return
+
+@app.put("/tickets/{track}/owner/{new}", tags=['tickets'])
+async def tickets_set_new_status(track: str, new: int):
+    store.ticket_owner_update(track, str(new))
     return
 
 @app.post("/tickets", tags=["tickets"])
