@@ -1,5 +1,5 @@
 from core.store import Store, StoreCreds, Client
-from core.service_api import Ticket, Message_from_hesk, create_new_ticket
+from core.service_api import Ticket, Message_from_hesk, NotePost, create_new_ticket
 from core.config import Config, statuses
 from core import bot_api
 from core import post_api
@@ -43,8 +43,13 @@ tags_metadata = [
     {
         "name": "kb",
         "description": "Manage Knowledgebase",
+    },
+    {
+        "name": "notes",
+        "description": "Manage notes",
     }
 ]
+
 
 @app.get("/")
 def root():
@@ -219,3 +224,11 @@ async def kb_articles_get(artid: int = None):
         return store.kb_articles_get()
     else:
         return store.kb_article_content_get(artid)
+
+@app.get("/notes/{ticket_id}", tags=['notes'])
+async def notes_get_by_ticketid(ticket_id: int):
+    return store.notes_get_by_ticket_id(ticket_id)
+
+@app.post("/notes/{ticket_id}", tags=['notes'])
+async def notes_get_by_ticketid(ticket_id: int, message: NotePost):
+    return store.notes_create_note(ticket_id, message.message)

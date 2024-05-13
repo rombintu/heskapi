@@ -39,6 +39,7 @@ def build_message_for_ticket(t: dict, custom_fields: list):
                     {"text": "Синхронизировать ⚙️", "callback_data": f"tickets_reload_{trackid}"}  
                 ],
                 [
+                    {"text": "Скрыть ❌", "callback_data": f"tickets_hide"},
                     {"text":"Подробнее 🖥", "url": f"{Config.hesk_web_url}/admin/admin_ticket.php?track={trackid}"}
                 ]
             ]

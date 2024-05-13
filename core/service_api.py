@@ -46,5 +46,5 @@ def create_new_ticket(ticket: Ticket):
         )
     return response.status_code
 
-def get_token():
-    ...
+class NotePost(BaseModel):
+    message: str

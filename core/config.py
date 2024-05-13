@@ -49,6 +49,7 @@ class Tables(Enum):
     replies = Config.mysql_table_prefix + "replies"
     kb_categories = Config.mysql_table_prefix + "kb_categories"
     kb_articles = Config.mysql_table_prefix + "kb_articles"
+    notes = Config.mysql_table_prefix + "notes"
 
 statuses = {
     0: "Новая",

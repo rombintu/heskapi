@@ -188,8 +188,8 @@ class Store:
         # cursor.execute(sql, (ticket_id))
         result = self.execute_select_one(sql, (ticket_id))
         if result:
-            status = self.ticket_status_get(result["status"])
-            result["status"] = status
+            result["status"] = self.ticket_status_get(result["status"])
+            result["notes"] = self.notes_get_by_ticket_id(result.get('id'))
         return result
     
     def ticket_get_by_track_id(self, track_id: int):
@@ -204,8 +204,8 @@ class Store:
                 LIMIT 1"""
         result = self.execute_select_one(sql, (track_id))
         if result:
-            status = self.ticket_status_get(result["status"])
-            result["status"] = status
+            result["status"] = self.ticket_status_get(result["status"])
+            result["notes"] = self.notes_get_by_ticket_id(result.get('id'))
         return result
 
     def tickets_get(self):
@@ -242,6 +242,8 @@ class Store:
 
     def ticket_get_custom_fields(self, ticket: dict):
         custom_fields_original = self.mapping_category2custom_flds(ticket.get("category"))
+        # TODO
+        log.debug(custom_fields_original)
         cf_values_from_ticket = []
         for k, v in ticket.items():
             if k.startswith('custom') and v:
@@ -412,3 +414,19 @@ class Store:
         sql = f"""SELECT subject,content from {Tables.kb_articles.value} WHERE id=%s"""
         content = self.execute_select_one(sql, artid)
         return content
+    
+    def notes_get_by_ticket_id(self, ticket_id: int):
+        sql = f"""
+        SELECT hu.name, hn.message FROM {Tables.notes.value} hn
+            LEFT JOIN hesk_users hu
+    	        ON hu.id=hn.who
+            WHERE ticket=%s
+        """
+        return self.execute_select_all(sql, (ticket_id))
+    
+    def notes_create_note(self, ticket_id: int, message: str):
+        sql = f"""
+        INSERT INTO {Tables.notes.value} (ticket,message,who,attachments) 
+            VALUES (%s,%s,1,"")
+        """
+        return self.execute_with_commit(sql, (ticket_id, message))
