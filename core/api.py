@@ -104,19 +104,8 @@ async def tickets_get_by_id(ticket_id: int):
 #     return store.tickets_by_email(email)
 
 @app.get("/tickets/user/{user_id}", tags=['tickets'])
-async def users_get_tickets_owner_without_status(user_id: int, skip_status_id: int = 3):
-    """Default: get tickets without status RESOLVED
-    statuses = {
-        0: "Новая",
-        1: "Получен комментарий",
-        2: "Комментарий отправлен",
-        3: "Решена",
-        4: "В работе",
-        5: "Приостановлена",
-    } 
-    AND CUSTOM_FIELDS FROM DATABASE
-    """
-    return store.tickets_user_owner_without_status(user_id, skip_status_id)
+async def tickets_get_by_user_id(user_id: int):
+    return store.tickets_get_by_user_id(user_id)
 
 @app.get("/tickets/{track}/replies", tags=['tickets'])
 async def tickets_get_replies(track: str):

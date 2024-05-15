@@ -108,33 +108,14 @@ class Store:
             params=(user_id)
         )
 
-    def tickets_user_owner_without_status(self, user_id: int, skip_status_id: int = 3):
-        """Default: get tickets without status RESOLVED
-        statuses = {
-            0: "Новая",
-            1: "Получен комментарий",
-            2: "Комментарий отправлен",
-            3: "Решена",
-            4: "В работе",
-            5: "Приостановлена",
-        } 
-        AND CUSTOM_FIELDS FROM DATABASE
-        """
-        # filter_status = self.ticket_status_get(status_id)
-        
-        # with self.connection.cursor() as cursor:
+    def tickets_get_by_user_id(self, user_id: int):
         sql = f"""
-            SELECT ht.*, hu.name AS owner_name, hc.name AS category_name
+            SELECT ht.trackid, ht.status
             FROM {Tables.tickets.value} ht
                 LEFT JOIN {Tables.users.value} hu
                     ON ht.owner = hu.id
-                LEFT JOIN {Tables.categories.value} hc
-                    ON ht.category = hc.id
-                WHERE hu.id=%s AND ht.status != %s"""
-            # cursor.execute(sql, (user_id, skip_status_id))
-            # result = cursor.fetchall()
-            # return result
-        return self.execute_select_all(sql, params=(user_id, skip_status_id))
+                WHERE hu.id=%s AND hu.id != 1"""
+        return self.execute_select_all(sql, params=(user_id))
 
     def tickets_by_email(self, email: str):
         # with self.connection.cursor() as cursor:
