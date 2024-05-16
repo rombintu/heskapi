@@ -48,3 +48,4 @@ def create_new_ticket(ticket: Ticket):
 
 class NotePost(BaseModel):
     message: str
+    email_from: str = None

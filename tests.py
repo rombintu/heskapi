@@ -55,7 +55,7 @@ def test_ticket_get_cf():
     log.debug(result)
 
 def test_build_message():
-    ticket = store.ticket_get_by_track_id("5U6-B86-XPRS")
+    ticket = store.ticket_get_by_track_id("W4B-8RY-S7M8")
     cfs = store.ticket_get_custom_fields(ticket)
     result = build_message_for_ticket(ticket, cfs)
     log.debug(result)

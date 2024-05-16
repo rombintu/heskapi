@@ -108,6 +108,18 @@ class Store:
             params=(user_id)
         )
 
+    # TODO
+    def users_get_workloaded(self):
+        sql = f"""
+            SELECT hu.id, COUNT(ht.status) AS inprogress
+            FROM {Tables.users.value} hu
+                LEFT JOIN {Tables.tickets.value} ht
+                    ON ht.owner = hu.id
+                WHERE ht.status = 4
+            GROUP BY hu.id
+        """
+        return self.execute_select_all(sql)
+
     def tickets_get_by_user_id(self, user_id: int):
         sql = f"""
             SELECT ht.trackid, ht.status
@@ -276,12 +288,12 @@ class Store:
     def mapping_category2custom_flds(self, category_id: int):
         # with self.connection.cursor() as cursor:
         sql = f"""SELECT * FROM {Tables.custom_fields.value} 
-                    WHERE `use`=%s
+                    WHERE `use` > %s
                     ORDER BY id"""
-        # cursor.execute(sql, (2))
-        result = self.execute_select_all(sql, (2))
+        result = self.execute_select_all(sql, (1))
         payload = []
-        
+        if not result:
+            return payload
         for row in result:
             category_list: list = []
             try:
@@ -405,9 +417,18 @@ class Store:
         """
         return self.execute_select_all(sql, (ticket_id))
     
-    def notes_create_note(self, ticket_id: int, message: str):
+    def notes_create_note(self, ticket_id: int, message: str, email_from: str = None):
+        id_from = None
+        if email_from:
+            id_from = self.execute_select_one(
+                f"SELECT id FROM {Tables.users.value} WHERE email=%s", 
+                email_from)
+        if id_from:
+            id_from = id_from.get('id')
+        else:
+            id_from = 1
         sql = f"""
         INSERT INTO {Tables.notes.value} (ticket,message,who,attachments) 
-            VALUES (%s,%s,1,"")
+            VALUES (%s,%s,%s,"")
         """
-        return self.execute_with_commit(sql, (ticket_id, message))
+        return self.execute_with_commit(sql, (ticket_id, message, id_from))

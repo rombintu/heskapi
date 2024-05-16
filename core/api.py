@@ -56,7 +56,9 @@ def root():
     return store.check_version()
 
 @app.get("/users", tags=['users'])
-async def users_get():
+async def users_get(workloaded: bool = False):
+    if workloaded:
+        return store.users_get_workloaded()
     return store.users_get()
 
 @app.get("/users/{user_id}", tags=['users'])
@@ -220,4 +222,4 @@ async def notes_get_by_ticketid(ticket_id: int):
 
 @app.post("/notes/{ticket_id}", tags=['notes'])
 async def notes_get_by_ticketid(ticket_id: int, message: NotePost):
-    return store.notes_create_note(ticket_id, message.message)
+    return store.notes_create_note(ticket_id, message.message, message.email_from)
