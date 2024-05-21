@@ -117,6 +117,23 @@ async def tickets_get_replies(track: str):
 async def tickets_set_new_status(track: str, new: int = 3):
     if statuses.get(new):
         store.ticket_status_update(track, str(new))
+        if new == 3:
+            ticket = store.ticket_get_by_track_id(track)
+            if not ticket:
+                return
+            m_body = post_api.templates['ticket_close'].format(
+                name=ticket.get('name'),
+                subject=ticket.get('subject'),
+                trackid=ticket.get('trackid'),
+                site_url=Config.hesk_web_url
+            )
+            message = post_api.post_mail.build_postmail_message(
+                subject=ticket.get('subject'),
+                body=m_body,
+                to_addr=ticket.get('email')
+            )
+            err = post_api.post_mail.send_email(ticket.get('email'), message)
+            log.debug(err)
     return
 
 @app.put("/tickets/{track}/owner/{new}", tags=['tickets'])

@@ -10,6 +10,15 @@ from utils.logger import logger as log
 
 from pydantic import BaseModel
 
+templates = {
+    "ticket_close": """Уважаемый(ая) {name},
+Статус Вашей заявки "{subject}" был изменен на Решена/Закрыта.
+Трек ID: {trackid}
+Это сообщение отправлено автоматически. Пожалуйста, не отвечайте на него.
+------------------------
+{site_url}""",
+}
+
 class EmailBody(BaseModel):
     subject: str
     to_addr: str
