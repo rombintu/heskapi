@@ -98,3 +98,11 @@ def test_client_create():
 def test_kb_categories_get():
     result = store.kb_categories_get()
     log.debug(result)
+
+def test_attachments_get():
+    data = store.attachments_get_info([3,2])
+    log.debug(data)
+
+def test_attachments_find_attr():
+    data = store.find_all_attachments_by_ticket_id(50)
+    log.debug(data)

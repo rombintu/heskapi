@@ -185,7 +185,7 @@ class Store:
             result["notes"] = self.notes_get_by_ticket_id(result.get('id'))
         return result
     
-    def ticket_get_by_track_id(self, track_id: int):
+    def ticket_get_by_track_id(self, track_id: str):
         sql = f"""
             SELECT ht.*, hu.name AS owner_name, hc.name AS category_name
             FROM {Tables.tickets.value} ht
@@ -232,6 +232,13 @@ class Store:
     def ticket_owner_update(self, trackid: str, new_owner_id: int):
         sql = f"UPDATE {Tables.tickets.value} SET owner=%s WHERE trackid=%s"
         self.execute_with_commit(sql, (new_owner_id, trackid))
+        sql_2 = f"""
+        SELECT hu.name,hu.email,hc.username FROM {Tables.users.value} hu
+        LEFT JOIN  {Tables.clients.value} hc
+            ON hu.email = hc.email
+        WHERE hu.id=%s
+        """
+        return self.execute_select_one(sql_2, (new_owner_id))
 
     def ticket_get_custom_fields(self, ticket: dict):
         custom_fields_original = self.mapping_category2custom_flds(ticket.get("category"))
@@ -432,3 +439,32 @@ class Store:
             VALUES (%s,%s,%s,"")
         """
         return self.execute_with_commit(sql, (ticket_id, message, id_from))
+    
+    def find_all_attachments_by_ticket_id(self, ticket_id: int | str):
+        if type(ticket_id) == str:
+            ticket = self.ticket_get_by_track_id(ticket_id)
+            if ticket:
+                ticket_id = ticket.get('id')
+        sql_ticket = f"""
+        SELECT attachments FROM {Tables.tickets.value} ht WHERE ht.id=%s
+        UNION
+        SELECT attachments FROM {Tables.replies.value} ha WHERE ha.replyto=%s
+        """
+        att_rows = self.execute_select_all(sql_ticket, (ticket_id, ticket_id))
+        payload = []
+        if att_rows:
+            for row in att_rows:
+                if row:
+                    for attr in row.get('attachments').split(','):
+                        _attr: str = attr.split('#')[0]
+                        if _attr.isdigit() and _attr:
+                            payload.append(int(attr.split('#')[0]))
+        return payload
+
+    
+    def attachments_get_info(self, att_ids=()):
+        sql = f"SELECT * FROM {Tables.attachments.value}"
+        if att_ids:
+            att_ids_format = ','.join('%s' for _ in att_ids)
+            sql += f" WHERE att_id IN ({att_ids_format})"
+        return self.execute_select_all(sql, (att_ids))

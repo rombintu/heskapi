@@ -1,3 +1,4 @@
+import pathlib, os
 from core.store import Store, StoreCreds, Client
 from core.service_api import Ticket, Message_from_hesk, NotePost, create_new_ticket
 from core.config import Config, statuses
@@ -5,6 +6,7 @@ from core import bot_api
 from core import post_api
 from utils.logger import logger as log
 from fastapi import FastAPI
+from starlette.responses import FileResponse
 
 Config.check_empty()
 
@@ -47,6 +49,10 @@ tags_metadata = [
     {
         "name": "notes",
         "description": "Manage notes",
+    },
+    {
+        "name": "attachments",
+        "description": "Manage attachments",
     }
 ]
 
@@ -138,8 +144,7 @@ async def tickets_set_new_status(track: str, new: int = 3):
 
 @app.put("/tickets/{track}/owner/{new}", tags=['tickets'])
 async def tickets_set_new_status(track: str, new: int):
-    store.ticket_owner_update(track, str(new))
-    return
+    return store.ticket_owner_update(track, str(new))
 
 @app.post("/tickets", tags=["tickets"])
 async def tickets_create(ticket: Ticket):
@@ -240,3 +245,17 @@ async def notes_get_by_ticketid(ticket_id: int):
 @app.post("/notes/{ticket_id}", tags=['notes'])
 async def notes_get_by_ticketid(ticket_id: int, message: NotePost):
     return store.notes_create_note(ticket_id, message.message, message.email_from)
+
+@app.get("/attachments/info/{ticket_id}", tags=['attachments'])
+async def attachments_get_by_ticketid(ticket_id: int | str):
+    att_ids = store.find_all_attachments_by_ticket_id(ticket_id)
+    if att_ids:
+        return store.attachments_get_info(att_ids)
+    return []
+
+@app.get("/attachments/download/{filename_path}", tags=['attachments'])
+async def attachments_get_by_ticketid(filename_path: str):
+    filepath = pathlib.Path(Config.hesk_attachments_dir).joinpath(filename_path)
+    if filepath.exists() and filepath.is_file():
+        return FileResponse(filepath, media_type="application/octet-stream", filename=filename_path)
+    return None

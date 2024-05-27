@@ -16,6 +16,7 @@ class Config:
     mysql_table_prefix = getenv("MYSQL_TABLE_PREFIX", "hesk_")
 
     hesk_web_url = getenv("HESK_WEB_URL")
+    hesk_attachments_dir = getenv("HESK_ATTACHMENTS_DIR")
 
     bot_token = getenv("BOT_TOKEN")
     bot_url = "https://api.telegram.org/bot"
@@ -50,6 +51,7 @@ class Tables(Enum):
     kb_categories = Config.mysql_table_prefix + "kb_categories"
     kb_articles = Config.mysql_table_prefix + "kb_articles"
     notes = Config.mysql_table_prefix + "notes"
+    attachments = Config.mysql_table_prefix + "attachments"
 
 statuses = {
     0: "Новая",
