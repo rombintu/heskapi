@@ -461,10 +461,16 @@ class Store:
                             payload.append(int(attr.split('#')[0]))
         return payload
 
-    
     def attachments_get_info(self, att_ids=()):
         sql = f"SELECT * FROM {Tables.attachments.value}"
         if att_ids:
             att_ids_format = ','.join('%s' for _ in att_ids)
             sql += f" WHERE att_id IN ({att_ids_format})"
         return self.execute_select_all(sql, (att_ids))
+    
+    def replies_add(self, ticket_id: int, replyer_name: str, content: str):
+        sql = f"""
+        INSERT INTO {Tables.replies.value} (replyto,name,message,message_html,attachments)
+            VALUES (%s,%s,%s,%s,'')
+        """
+        self.execute_with_commit(sql, (ticket_id,replyer_name,content,content))

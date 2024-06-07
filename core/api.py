@@ -1,6 +1,6 @@
 import pathlib, os
 from core.store import Store, StoreCreds, Client
-from core.service_api import Ticket, Message_from_hesk, NotePost, create_new_ticket
+from core.service_api import Ticket, Message_from_hesk, NotePost, ReplyPost, create_new_ticket
 from core.config import Config, statuses
 from core import bot_api
 from core import post_api
@@ -53,6 +53,10 @@ tags_metadata = [
     {
         "name": "attachments",
         "description": "Manage attachments",
+    },
+    {
+        "name": "replies",
+        "description": "Manage replies"
     }
 ]
 
@@ -258,4 +262,26 @@ async def attachments_get_by_ticketid(filename_path: str):
     filepath = pathlib.Path(Config.hesk_attachments_dir).joinpath(filename_path)
     if filepath.exists() and filepath.is_file():
         return FileResponse(filepath, media_type="application/octet-stream", filename=filename_path)
+    return None
+
+@app.post("/replies/{ticket_id}", tags=['replies'])
+async def replies_add(ticket_id: int, message: ReplyPost):
+    ticket = store.ticket_get(ticket_id)
+    log.debug(ticket)
+    if not ticket:
+        return None
+    store.replies_add(ticket_id, message.reply_name, message.content)
+
+    m_body = post_api.templates['ticket_reply'].format(
+        name=ticket.get('name'),
+        subject=ticket.get('subject'),
+        site_url=Config.hesk_web_url
+    )
+    message = post_api.post_mail.build_postmail_message(
+        subject=ticket.get('subject'),
+        body=m_body,
+        to_addr=ticket.get('email')
+    )
+    err = post_api.post_mail.send_email(ticket.get('email'), message)
+    log.debug(err)
     return None

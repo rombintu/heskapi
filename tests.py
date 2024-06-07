@@ -1,7 +1,7 @@
 from json import dumps, load, loads
 from core import store, api
 from utils.logger import logger as log
-from core.service_api import Ticket
+from core.service_api import Ticket, ReplyPost
 from core.bot_api import build_message_for_ticket, bot_send_message
 import pytest
 from core.post_api import PostMail
@@ -106,3 +106,9 @@ def test_attachments_get():
 def test_attachments_find_attr():
     data = store.find_all_attachments_by_ticket_id(50)
     log.debug(data)
+
+@pytest.mark.asyncio
+async def test_reply_add():
+    await api.replies_add(
+        57, message=ReplyPost(reply_name="rsegsgse", content="f2g232323g")
+    )

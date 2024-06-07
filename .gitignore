@@ -1,4 +1,5 @@
 *cache*
 *env*
+tmp
 !*.example
 *vscode
