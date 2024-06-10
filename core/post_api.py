@@ -1,7 +1,7 @@
 import smtplib, ssl
-import imaplib
-from aioimaplib import aioimaplib
-from email import message_from_bytes
+# import imaplib
+# from aioimaplib import aioimaplib
+# from email import message_from_bytes
 # from email import encoders
 # from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
