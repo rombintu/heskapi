@@ -1,5 +1,7 @@
 import smtplib, ssl
-
+import imaplib
+from aioimaplib import aioimaplib
+from email import message_from_bytes
 # from email import encoders
 # from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
@@ -74,5 +76,29 @@ class PostMail:
         finally:
             server.quit()
         return 0
+    
+    # # TODO
+    # async def check_new_emails(self, login_from: str):
+    #     imap = imaplib.IMAP4_SSL(host=self.host, port=aioimaplib.IMAP4_SSL_PORT, ssl_context=self.context)
+    #     # await imap.s
+    #     imap.login(self.login, self.password)
+    #     imap.select('inbox')
+
+    #     typ, msgnums = None, None
+    #     if login_from:
+    #         typ, msgnums = imap.search('UTF-8', 'FROM', login_from)
+    #     else:
+    #         typ, msgnums = imap.search('UTF-8', 'UNSEEN')
+    #     log.debug(typ)
+    #     log.debug(msgnums)
+    #     for num in msgnums[0].split():
+    #         typ, msg_data = imap.fetch(num, 'BODY[HEADER]')
+    #         raw_email = b''.join(msg_data[0][1])
+    #         email_message = message_from_bytes(raw_email)
+    #         log.debug(f"New message from {login_from}: {email_message}")
+        
+    #     imap.close()
+    #     imap.logout()
 
 post_mail = PostMail()
+
